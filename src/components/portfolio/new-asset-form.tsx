@@ -130,42 +130,55 @@ export function NewAssetForm({
     }
   }, [assetType, costManual, interestRate, monthTerm, quantityVal, buyPrice, marketPrice, valueManual]);
 
-  const handleSubmit = () => {
-    const catObject = assetCategories.find(c => c.id === assetType) || assetCategories[0];
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     
-    let iconBg = 'bg-gray-100 text-primary';
-    if (assetType === 'bds') iconBg = 'bg-primary/10 text-primary';
-    if (assetType === 'tietkiem') iconBg = 'bg-emerald-100 text-emerald-700';
+    try {
+      const catObject = assetCategories.find(c => c.id === assetType) || assetCategories[0];
+      
+      let iconBg = 'bg-gray-100 text-primary';
+      if (assetType === 'bds') iconBg = 'bg-primary/10 text-primary';
+      if (assetType === 'tietkiem') iconBg = 'bg-emerald-100 text-emerald-700';
 
-    let finalQuantityString = '1';
-    if (assetType === 'tietkiem') finalQuantityString = `1 Tài khoản`;
-    if (assetType === 'vang') finalQuantityString = `${quantityVal || '0'} Chỉ`;
-    if (assetType === 'chungkhoan') finalQuantityString = `${quantityVal || '0'} CP`;
-    if (assetType === 'chungchiquy') finalQuantityString = `${quantityVal || '0'} CCQ`;
-    if (assetType === 'bds') finalQuantityString = `${parseStr(bdsArea)} m2`;
+      let finalQuantityString = '1';
+      if (assetType === 'tietkiem') finalQuantityString = `1 Tài khoản`;
+      if (assetType === 'vang') finalQuantityString = `${quantityVal || '0'} Chỉ`;
+      if (assetType === 'chungkhoan') finalQuantityString = `${quantityVal || '0'} CP`;
+      if (assetType === 'chungchiquy') finalQuantityString = `${quantityVal || '0'} CCQ`;
+      if (assetType === 'bds') finalQuantityString = `${parseStr(bdsArea)} m2`;
 
-    const payload = {
-      name: name || 'Tài sản mới',
-      type: catObject.label,
-      icon: catObject.icon,
-      iconBg: iconBg,
-      quantity: finalQuantityString,
-      cost: computedVals.cost,
-      value: computedVals.value,
-      status: txStatus,
-      horizon: assetHorizon,
-      startDate: startDate,
-      goalId: selectedGoalId === '' ? undefined : Number(selectedGoalId)
-    };
+      const payload = {
+        name: name || 'Tài sản mới',
+        type: catObject.label,
+        // We don't send the icon function/component to Firestore
+        iconBg: iconBg,
+        quantity: finalQuantityString,
+        cost: computedVals.cost,
+        value: computedVals.value,
+        status: txStatus,
+        horizon: assetHorizon,
+        startDate: startDate,
+        goalId: selectedGoalId === '' ? undefined : Number(selectedGoalId)
+      };
 
-    if (isEditMode && assetId !== undefined) {
-      updateAsset(assetId, payload);
-    } else {
-      addAsset(payload);
+      if (isEditMode && assetId !== undefined) {
+        await updateAsset(assetId, payload as any);
+      } else {
+        await addAsset(payload as any);
+      }
+      
+      setShowPopup(true);
+    } catch (error) {
+      console.error("Lỗi khi lưu tài sản:", error);
+      alert("Không thể lưu tài sản. Vui lòng kiểm tra lại kết nối hoặc cấu hình Firebase.");
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setShowPopup(true);
   };
+
 
   const resetForm = () => {
     if (isEditMode) {

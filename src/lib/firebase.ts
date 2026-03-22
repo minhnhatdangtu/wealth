@@ -11,8 +11,13 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+if (!firebaseConfig.apiKey) {
+  console.error("Firebase API Key is missing! Check your .env.local file or GitHub Secrets.");
+}
+
 // Prevent duplicate app initialization in Next.js hot reload
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 
 export const db = getFirestore(app);
 export default app;

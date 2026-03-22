@@ -2,28 +2,35 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot
+  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Building2, TrendingUp, Gem, Landmark, PieChart, Activity } from 'lucide-react';
 
 export type AssetType = {
   id: number;
   name: string;
   type: string;
   icon: any;
-  iconBg: string;
+  iconBg: string; // Tailwind class
   quantity: string;
   cost: number;
   value: number;
-  status: string;
+  status: string; // "ĐANG HOẠT ĐỘNG" or "ĐÃ TẤT TOÁN"
   horizon: 'daihan' | 'nganhan';
   startDate?: string;
-  isCustomPriced?: boolean;
-  goalId?: number;
+  isCustomPriced?: boolean; // Flag if asset uses oracle pricing
+  goalId?: number; // Connects asset to goal
   _docId?: string; // Firestore document ID
 };
 
-export const initialMarketPrices: Record<string, number> = {};
+export const initialMarketPrices: Record<string, number> = {
+  'Vàng nhẫn SJC 9999': 74000000,
+  'Danh mục Cổ phiếu VN30': 43333.3333,
+  'Chứng chỉ quỹ DCDS': 11833.3333
+};
+
+const initialAssets: AssetType[] = [];
 
 type PortfolioContextType = {
   assets: AssetType[];
@@ -39,15 +46,25 @@ type PortfolioContextType = {
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
-// Map Firestore doc to AssetType (icons are not stored in Firestore)
+// Map Firestore doc to AssetType
 function mapDocToAsset(docId: string, data: any): AssetType {
   return {
     ...data,
     id: data.id ?? Date.now(),
     _docId: docId,
-    icon: undefined, // icon is resolved at render time from type
-    iconBg: data.iconBg ?? 'bg-gray-100 text-gray-500',
-  };
+    icon: null, // Resolved at render time via getAssetIcon
+  } as AssetType;
+}
+
+// Resolve icon from type at render time
+function getAssetIcon(type: string) {
+  const t = (type || '').toLowerCase();
+  if (t.includes('bất động sản')) return Building2;
+  if (t.includes('chứng khoán')) return TrendingUp;
+  if (t.includes('vàng')) return Gem;
+  if (t.includes('quỹ') || t.includes('tiết kiệm')) return Landmark;
+  if (t.includes('chứng chỉ')) return PieChart;
+  return Activity;
 }
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
@@ -61,6 +78,9 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const unsub = onSnapshot(collection(db, 'assets'), (snapshot) => {
       const loaded = snapshot.docs.map(d => mapDocToAsset(d.id, d.data()));
       setAssets(loaded);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore Listener Error:", error);
       setLoading(false);
     });
     return () => unsub();
@@ -76,7 +96,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const existing = assets.find(a => a.id === id);
     if (!existing?._docId) return;
     const { icon: _icon, _docId: _d, ...rest } = updatedAsset as any;
-    await updateDoc(doc(db, 'assets', existing._docId), { ...rest, id });
+    await updateDoc(doc(db, 'assets', existing._docId), rest);
   };
 
   const deleteAsset = async (id: number) => {
@@ -89,24 +109,36 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     setMarketPrices(prev => ({ ...prev, [ticker]: price }));
   };
 
-  // Resolve icon from type at render time
+  // Resolve icons and compute live values through Oracle dictionary
   const computedAssets = assets.map(a => {
-    let icon = a.icon;
-    if (!icon) {
-      // Lazily resolved in components via getAssetIcon(type) 
-      icon = null;
+    let finalValue = a.value;
+    let isCustom = false;
+    
+    if (a.status === 'HOẠT ĐỘNG' && marketPrices[a.name] !== undefined) {
+      const rawNumStr = (a.quantity || '').split(' ')[0].replace(/,/g, '');
+      const rawNum = parseFloat(rawNumStr);
+      if (!isNaN(rawNum)) {
+        finalValue = Math.round(rawNum * marketPrices[a.name]);
+        isCustom = true;
+      }
     }
-    return { ...a, icon, isCustomPriced: false };
+
+    return { 
+      ...a, 
+      icon: getAssetIcon(a.type), 
+      value: finalValue,
+      isCustomPriced: isCustom 
+    };
   });
 
   return (
-    <PortfolioContext.Provider value={{
-      assets: computedAssets,
+    <PortfolioContext.Provider value={{ 
+      assets: computedAssets, 
       loading,
-      addAsset,
-      updateAsset,
+      addAsset, 
+      updateAsset, 
       deleteAsset,
-      selectedCategory,
+      selectedCategory, 
       setSelectedCategory,
       marketPrices,
       updateMarketPrice
