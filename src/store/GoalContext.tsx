@@ -20,57 +20,7 @@ export type GoalType = {
   trackColor?: string;
 };
 
-const defaultGoals: GoalType[] = [
-  {
-    id: 1,
-    name: 'Mua biệt thự nghỉ dưỡng',
-    iconName: 'Home',
-    iconBgColor: 'bg-amber-100/60',
-    iconTextColor: 'text-amber-700',
-    targetAmount: 12500000000,
-    currentAmount: 8500000000,
-    deadline: 'Tháng 12, 2028',
-    description: '',
-    isHero: true,
-    statusText: '',
-    progressColor: 'bg-amber-600',
-    trackColor: 'bg-amber-100',
-  },
-  {
-    id: 2,
-    name: 'Quỹ học vấn cho con',
-    iconName: 'GraduationCap',
-    iconBgColor: 'bg-primary',
-    iconTextColor: 'text-white',
-    targetAmount: 8000000000,
-    currentAmount: 4200000000,
-    deadline: '2032',
-    description: 'Mục tiêu: Du học bậc Đại học tại Anh (2032)',
-    isHero: false,
-    statusText: 'Đang tăng trưởng',
-    statusBgColor: 'bg-green-100',
-    statusTextColor: 'text-green-700',
-    progressColor: 'bg-[#182a5c]',
-    trackColor: 'bg-gray-100',
-  },
-  {
-    id: 3,
-    name: 'Quỹ dự phòng khẩn cấp',
-    iconName: 'ShieldCheck',
-    iconBgColor: 'bg-amber-100',
-    iconTextColor: 'text-amber-700',
-    targetAmount: 2500000000,
-    currentAmount: 2500000000,
-    deadline: '',
-    description: 'Tương đương 12 tháng chi tiêu gia đình',
-    isHero: false,
-    statusText: 'Sẵn sàng',
-    statusBgColor: 'bg-amber-100',
-    statusTextColor: 'text-amber-700',
-    progressColor: 'bg-[#b46505]',
-    trackColor: 'bg-amber-100/50',
-  }
-];
+const defaultGoals: GoalType[] = [];
 
 type GoalContextType = {
   goals: GoalType[];

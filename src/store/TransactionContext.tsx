@@ -18,73 +18,7 @@ export type TransactionType = {
 };
 
 // ... initial data
-const initialTransactions: TransactionType[] = [
-  {
-    id: 1,
-    date: '15 Th05, 2024\n14:30 PM',
-    title: 'Tiền thuê Căn hộ Vinhomes #A12',
-    subtitle: 'Bất động sản • Thu nhập thụ động',
-    icon: Building2,
-    iconBg: 'bg-amber-100/50 text-amber-700',
-    status: 'HOÀN THÀNH',
-    statusBg: 'bg-green-100 text-green-700', // unified unwrapped class logic handled previously
-    amount: '+25,000,000',
-    amountColor: 'text-amber-700',
-    type: 'income'
-  },
-  {
-    id: 2,
-    date: '12 Th05, 2024\n09:15 AM',
-    title: 'Mua bổ sung cổ phiếu VNM',
-    subtitle: 'Chứng khoán • Tái đầu tư',
-    icon: LineChart,
-    iconBg: 'bg-blue-100 text-blue-700',
-    status: 'ĐANG XỬ LÝ',
-    statusBg: 'bg-orange-100 text-orange-700',
-    amount: '-150,000,000',
-    amountColor: 'text-primary',
-    type: 'investment'
-  },
-  {
-    id: 3,
-    date: '10 Th05, 2024\n18:45 PM',
-    title: 'Chi phí giáo dục hàng tháng',
-    subtitle: 'Chi tiêu sinh hoạt • Con cái',
-    icon: ShoppingBag,
-    iconBg: 'bg-rose-100 text-rose-700',
-    status: 'HOÀN THÀNH',
-    statusBg: 'bg-green-100 text-green-700',
-    amount: '-42,500,000',
-    amountColor: 'text-primary',
-    type: 'expense'
-  },
-  {
-    id: 4,
-    date: '05 Th05, 2024\n11:00 AM',
-    title: 'Lãi tiết kiệm định kỳ',
-    subtitle: 'Tiền mặt • Tiết kiệm',
-    icon: Landmark,
-    iconBg: 'bg-amber-100/50 text-amber-700',
-    status: 'HOÀN THÀNH',
-    statusBg: 'bg-green-100 text-green-700',
-    amount: '+12,850,000',
-    amountColor: 'text-amber-700',
-    type: 'income'
-  },
-  {
-    id: 5,
-    date: '02 Th05, 2024\n10:00 AM',
-    title: 'Thanh toán hóa đơn điện nước',
-    subtitle: 'Chi tiêu sinh hoạt • Định kỳ',
-    icon: ShoppingBag,
-    iconBg: 'bg-primary/5 text-primary',
-    status: 'ĐANG XỬ LÝ',
-    statusBg: 'bg-orange-100 text-orange-700',
-    amount: '-2,450,000',
-    amountColor: 'text-primary',
-    type: 'expense'
-  }
-];
+const initialTransactions: TransactionType[] = [];
 
 export type DateRange = { start: string; end: string };
 
