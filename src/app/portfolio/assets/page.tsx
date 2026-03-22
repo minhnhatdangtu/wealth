@@ -4,7 +4,7 @@ import { usePortfolio } from '@/store/PortfolioContext';
 import Link from 'next/link';
 import { ArrowLeft, Edit3, Settings2, Pencil, Trash2, Info } from 'lucide-react';
 import React, { useState } from 'react';
-import { formatCurrency } from '@/utils/format-utils';
+import { formatCurrency, parseCurrency, formatNumber, parseDecimal } from '@/utils/format-utils';
 
 export default function AllAssetsPage() {
   const { assets, marketPrices, updateMarketPrice, deleteAsset } = usePortfolio();
@@ -27,9 +27,8 @@ export default function AllAssetsPage() {
   };
 
   const handleSavePrice = async (ticker: string) => {
-    const pStr = tempPriceStr.replace(/,/g, '').replace(/\./g, '');
-    const finalPrice = parseFloat(pStr);
-    if (!isNaN(finalPrice) && finalPrice > 0) {
+    const finalPrice = parseDecimal(tempPriceStr);
+    if (finalPrice > 0) {
       await updateMarketPrice(ticker, finalPrice);
     }
     setEditingPriceTicker(null);
@@ -37,13 +36,16 @@ export default function AllAssetsPage() {
 
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cleanStr = e.target.value.replace(/[^0-9]/g, '');
-    if (!cleanStr) {
-      setTempPriceStr('');
-      return;
-    }
-    const num = parseFloat(cleanStr);
-    setTempPriceStr(new Intl.NumberFormat('vi-VN').format(num).replace(/,/g, '.'));
+    const val = e.target.value;
+    // Normalize . to , for decimal entry
+    const normalized = val.replace(/\./g, ',');
+    const sanitized = normalized.replace(/[^0-9,]/g, '');
+    
+    // Ensure only one comma
+    const parts = sanitized.split(',');
+    const finalVal = parts.length > 2 ? parts[0] + ',' + parts.slice(1).join('') : sanitized;
+
+    setTempPriceStr(finalVal);
   };
 
   const oracleValidTypes = ['Vàng & kim loại', 'Chứng khoán', 'Chứng chỉ quỹ', 'Tiết kiệm & Quỹ'];

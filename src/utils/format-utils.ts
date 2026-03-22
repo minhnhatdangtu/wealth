@@ -1,71 +1,75 @@
 /**
- * Chuẩn hóa định dạng số cho toàn hệ thống:
+ * Định dạng số tùy chỉnh theo quy tắc:
  * - Dấu chấm (.) phân cách phần ngàn
  * - Dấu phẩy (,) phân cách thập phân
+ * Không phụ thuộc vào môi trường locale để đảm bảo tính nhất quán tuyệt đối.
  */
 
 // ĐỊNH DẠNG (DISPLAY)
 export const formatCurrency = (value: number, decimals: number = 0) => {
-  return new Intl.NumberFormat('vi-VN', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value);
+  const rounded = Math.round(value);
+  return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
 export const formatNumber = (value: number, decimals: number = 2) => {
-  return new Intl.NumberFormat('vi-VN', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: decimals,
-  }).format(value);
+  if (value === 0) return '0';
+  
+  // Lấy phần nguyên và phần thập phân chính xác
+  const fixed = value.toFixed(decimals);
+  let [whole, frac] = fixed.split('.');
+  
+  // Định dạng phần nguyên với dấu chấm hàng ngàn
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  
+  // Xử lý phần thập phân (loại bỏ số 0 thừa ở cuối)
+  if (frac) {
+    frac = frac.replace(/0+$/, '');
+    if (frac.length > 0) {
+      return `${formattedWhole},${frac}`;
+    }
+  }
+  
+  return formattedWhole;
 };
 
 // PHÂN TÍCH (PARSING)
 export const parseCurrency = (val: string | number): number => {
   if (typeof val === 'number') return val;
   if (!val) return 0;
-  // Loại bỏ mọi ký tự không phải số
-  const cleaned = val.replace(/[^0-9]/g, '');
-  return parseInt(cleaned, 10) || 0;
+  return parseInt(val.toString().replace(/[^0-9]/g, ''), 10) || 0;
 };
 
-/**
- * Phân tích chuỗi số sang số thực (float).
- * Hỗ trợ cả chuẩn Việt Nam (0,5) và chuẩn Máy tính (0.5) 
- * Ưu tiên nhận diện chuẩn Việt Nam có dấu phẩy.
- */
 export const parseDecimal = (val: string | number): number => {
   if (typeof val === 'number') return val;
   if (!val) return 0;
 
-  // Loại bỏ các ký tự đơn vị (m2, Chỉ, CCQ, ...)
   let cleaned = val.toString().replace(/[^0-9,.]/g, '').trim();
   if (!cleaned) return 0;
 
-  // TH1: Có dấu phẩy -> Chắc chắn chuẩn VN (1.234,56)
+  // Nếu có dấu phẩy -> Coi là chuẩn Việt Nam
   if (cleaned.includes(',')) {
-    // Xóa mọi dấu chấm (phần ngàn), đổi phẩy sang chấm
+    // 1.000,5 -> 1000.5
     cleaned = cleaned.replace(/\./g, '').replace(/,/g, '.');
   } 
-  // TH2: Không có dấu phẩy nhưng có dấu chấm
+  // Nếu chỉ có dấu chấm -> Phân biệt (1.000) và (0.5)
   else if (cleaned.includes('.')) {
-    // Nếu có NHIỀU dấu chấm -> Là phần ngàn VN (1.000.000)
-    const dotCount = (cleaned.match(/\./g) || []).length;
-    if (dotCount > 1) {
+    const dots = cleaned.split('.');
+    if (dots.length > 2) {
+      // 1.000.000 -> 1000000
       cleaned = cleaned.replace(/\./g, '');
     } else {
-      // Nếu chỉ có 1 dấu chấm, có thể là 1.000 (ngàn) hoặc 1.5 (thập phân)
-      // Nếu có đúng 3 chữ số sau dấu chấm -> Coi là phần ngàn (1.000)
-      // Ngoại trừ trường hợp nó bắt đầu bằng 0 (0.500) -> Thập phân
-      const parts = cleaned.split('.');
-      if (parts[1].length === 3 && parts[0] !== '0') {
+      // Nếu 3 chữ số sau dấu chấm và số lớn hơn hoặc bằng 1000 -> Phần ngàn
+      const post = dots[1];
+      const pre = dots[0];
+      if (post.length === 3 && parseFloat(cleaned) >= 1000 && pre !== '0') {
         cleaned = cleaned.replace(/\./g, '');
-      } else {
-        // Giữ nguyên dấu chấm (thập phân kiểu JS)
       }
+      // Ngược lại giữ nguyên cho chuẩn JS (0.5)
     }
   }
 
-  return parseFloat(cleaned) || 0;
+  const res = parseFloat(cleaned);
+  return isNaN(res) ? 0 : res;
 };
 
 // TIỆN ÍCH HIỂN THỊ nhanh

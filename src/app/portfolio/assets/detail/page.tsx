@@ -8,7 +8,7 @@ import {
   Calendar, Activity
 } from 'lucide-react';
 
-import { formatCurrency, formatNumber } from '@/utils/format-utils';
+import { formatCurrency, formatNumber, parseDecimal as utilParseDecimal } from '@/utils/format-utils';
 
 const fmtVND = (v: number) => formatCurrency(Math.abs(Math.round(v)));
 
@@ -40,7 +40,7 @@ function MetricCell({ label, value, unit }: { label: string; value: string; unit
 
 function ExtraMetrics({ type, active }: { type: string; active: any[] }) {
   const t = type.toLowerCase();
-  const parseQty = (q: string) => parseFloat(q.replace(/[^0-9.]/g, '').replace(/,/g, '.')) || 0;
+  const parseQty = (q: string) => utilParseDecimal(q);
   const totalCost = active.reduce((s, a) => s + a.cost, 0);
 
   if (t.includes('bất động sản')) {

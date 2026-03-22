@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePortfolio } from '@/store/PortfolioContext';
 
-import { formatCurrency, formatNumber } from '@/utils/format-utils';
+import { formatCurrency, formatNumber, parseDecimal } from '@/utils/format-utils';
 
 const formatVND = (v: number) => formatCurrency(Math.abs(v));
 
@@ -44,7 +44,7 @@ export function DetailedHoldings() {
     }
     acc[key].statuses.push(asset.status);
     const parts = asset.quantity.trim().split(/\s+/);
-    const qtyNum = parseFloat(parts[0].replace(/[^0-9.]/g, '').replace(/,/g, '.'));
+    const qtyNum = parseDecimal(parts[0]);
     if (!isNaN(qtyNum)) acc[key].totalQuantity += qtyNum;
     if (!acc[key].qtyUnit && parts.length > 1) acc[key].qtyUnit = parts.slice(1).join(' ');
     acc[key].totalCost += asset.cost;
