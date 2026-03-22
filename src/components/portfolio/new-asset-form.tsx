@@ -65,12 +65,19 @@ export function NewAssetForm({
 
   // Number/Money tracking 
   // Unified helper parser
-  const parseNum = (val: string) => parseInt(val.replace(/\./g, '') || '0', 10);
+  const parseNum = (val: string) => parseInt(val.replace(/\./g, '').replace(/,/g, '') || '0', 10);
+  const parseDecimal = (val: string) => {
+    // Convert Vietnamese decimal (,) or generic (.) to standard float
+    const cleaned = val.replace(/\./g, '').replace(/,/g, '.');
+    return parseFloat(cleaned) || 0;
+  };
   const parseStr = (num: number) => new Intl.NumberFormat('vi-VN').format(num);
 
   const [quantityVal, setQuantityVal] = useState<string>(() => {
     if (initialData && initialData.type !== 'Tiết kiệm & Quỹ' && initialData.type !== 'Bất động sản') {
-      return parseStr(parseFloat(initialData.quantity.replace(/[^0-9]/g, '')));
+      // Keep decimal if present in initial data
+      const q = parseFloat(initialData.quantity.replace(/[^0-9,.]/g, '').replace(',', '.'));
+      return isNaN(q) ? '' : new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 4 }).format(q);
     }
     return '';
   });
@@ -82,7 +89,7 @@ export function NewAssetForm({
   // Buying/Market Tracking (For Gold, Stocks, Mutual Funds)
   const [buyPrice, setBuyPrice] = useState<string>(() => {
     if (initialData && ['Vàng & kim loại', 'Chứng khoán', 'Chứng chỉ quỹ'].includes(initialData.type)) {
-      const q = parseInt(initialData.quantity.replace(/[^0-9]/g, ''), 10);
+      const q = parseDecimal(initialData.quantity);
       if (q && q > 0) {
         return parseStr(Math.round(initialData.cost / q));
       }
@@ -92,7 +99,7 @@ export function NewAssetForm({
   
   const [marketPrice, setMarketPrice] = useState<string>(() => {
     if (initialData && ['Vàng & kim loại', 'Chứng khoán', 'Chứng chỉ quỹ'].includes(initialData.type)) {
-      const q = parseInt(initialData.quantity.replace(/[^0-9]/g, ''), 10);
+      const q = parseDecimal(initialData.quantity);
       if (q && q > 0) {
         return parseStr(Math.round(initialData.value / q));
       }
@@ -107,9 +114,19 @@ export function NewAssetForm({
   };
 
   const handleQtyFormat = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawVal = e.target.value.replace(/[^0-9]/g, '');
-    setQuantityVal(rawVal ? parseStr(parseInt(rawVal, 10)) : '');
+    // Allow digits and only ONE decimal separator (comma or dot)
+    const val = e.target.value;
+    const sanitized = val.replace(/[^0-9,.]/g, '');
+    
+    // Check if it's just a decimal dot/comma to allow typing it
+    if (sanitized === ',' || sanitized === '.') {
+      setQuantityVal('0,');
+      return;
+    }
+    
+    setQuantityVal(sanitized);
   };
+
 
   // Computations
   const computedVals = useMemo(() => {
@@ -119,7 +136,8 @@ export function NewAssetForm({
       return { cost: c, value: Math.round(v) };
     } 
     else if (['vang', 'chungkhoan', 'chungchiquy'].includes(assetType)) {
-      const q = parseNum(quantityVal) || 0;
+      const q = parseDecimal(quantityVal) || 0;
+
       const bp = parseNum(buyPrice);
       const mp = parseNum(marketPrice);
       return { cost: q * bp, value: q * mp };
