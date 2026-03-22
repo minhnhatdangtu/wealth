@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot
+  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Building2, TrendingUp, Gem, Landmark, PieChart, Activity } from 'lucide-react';
@@ -24,6 +24,7 @@ export type AssetType = {
   _docId?: string; // Firestore document ID
 };
 
+// These will be used as a fallback or starting point
 export const initialMarketPrices: Record<string, number> = {
   'Vàng nhẫn SJC 9999': 74000000,
   'Danh mục Cổ phiếu VN30': 43333.3333,
@@ -41,7 +42,7 @@ type PortfolioContextType = {
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
   marketPrices: Record<string, number>;
-  updateMarketPrice: (ticker: string, price: number) => void;
+  updateMarketPrice: (ticker: string, price: number) => Promise<void>;
 };
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
@@ -82,15 +83,29 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [marketPrices, setMarketPrices] = useState<Record<string, number>>(initialMarketPrices);
 
-  // Real-time listener from Firestore
+  // Real-time listener for Assets
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'assets'), (snapshot) => {
       const loaded = snapshot.docs.map(d => mapDocToAsset(d.id, d.data()));
       setAssets(loaded);
       setLoading(false);
     }, (error) => {
-      console.error("Firestore Listener Error:", error);
+      console.error("Firestore Assets Listener Error:", error);
       setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  // Real-time listener for Market Prices
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'market_prices'), (snapshot) => {
+      const loadedPrices: Record<string, number> = { ...initialMarketPrices };
+      snapshot.docs.forEach(d => {
+        loadedPrices[d.id] = d.data().price;
+      });
+      setMarketPrices(loadedPrices);
+    }, (error) => {
+      console.error("Firestore Market Prices Listener Error:", error);
     });
     return () => unsub();
   }, []);
@@ -108,15 +123,18 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     await updateDoc(doc(db, 'assets', existing._docId), cleanData(rest));
   };
 
-
   const deleteAsset = async (id: number) => {
     const existing = assets.find(a => a.id === id);
     if (!existing?._docId) return;
     await deleteDoc(doc(db, 'assets', existing._docId));
   };
 
-  const updateMarketPrice = (ticker: string, price: number) => {
-    setMarketPrices(prev => ({ ...prev, [ticker]: price }));
+  const updateMarketPrice = async (ticker: string, price: number) => {
+    // Update Firestore: using ticker as doc ID
+    await setDoc(doc(db, 'market_prices', ticker), { 
+      price, 
+      updatedAt: new Date().toISOString() 
+    });
   };
 
   // Resolve icons and compute live values through Oracle dictionary

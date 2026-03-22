@@ -27,14 +27,15 @@ export default function AllAssetsPage() {
     setTempPriceStr(currentPrice.toString());
   };
 
-  const handleSavePrice = (ticker: string) => {
+  const handleSavePrice = async (ticker: string) => {
     const pStr = tempPriceStr.replace(/,/g, '').replace(/\./g, '');
     const finalPrice = parseFloat(pStr);
     if (!isNaN(finalPrice) && finalPrice > 0) {
-      updateMarketPrice(ticker, finalPrice);
+      await updateMarketPrice(ticker, finalPrice);
     }
     setEditingPriceTicker(null);
   };
+
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const cleanStr = e.target.value.replace(/[^0-9]/g, '');
