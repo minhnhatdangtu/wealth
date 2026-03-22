@@ -200,8 +200,7 @@ export default function AllAssetsPage() {
                 const unitPrice = marketPrices[item.name];
                 const hasOracle = unitPrice !== undefined && item.status === 'HOẠT ĐỘNG';
                 
-                const formattedQuantity = item.quantity.replace(/,/g, '.');
-                const qtyParts = formattedQuantity.split(' ');
+                const qtyParts = (item.quantity || '').trim().split(/\s+/);
                 const qtyVal = qtyParts[0];
                 const qtyUnit = qtyParts.slice(1).join(' ');
                 
