@@ -39,6 +39,15 @@ function mapDocToGoal(docId: string, data: any): GoalType {
   return { ...data, id: data.id ?? Date.now(), _docId: docId };
 }
 
+// Helper to remove undefined for Firestore compat
+const cleanData = (obj: any) => {
+  const newObj = { ...obj };
+  Object.keys(newObj).forEach(key => 
+    newObj[key] === undefined && delete newObj[key]
+  );
+  return newObj;
+};
+
 export function GoalProvider({ children }: { children: ReactNode }) {
   const [goals, setGoals] = useState<GoalType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,15 +64,16 @@ export function GoalProvider({ children }: { children: ReactNode }) {
   const addGoal = async (goal: Omit<GoalType, 'id'>) => {
     const id = Date.now();
     const { _docId: _d, ...rest } = goal as any;
-    await addDoc(collection(db, 'goals'), { ...rest, id });
+    await addDoc(collection(db, 'goals'), cleanData({ ...rest, id }));
   };
 
   const updateGoal = async (id: number, updatedGoal: Partial<GoalType>) => {
     const existing = goals.find(g => g.id === id);
     if (!existing?._docId) return;
     const { _docId: _d, ...rest } = updatedGoal as any;
-    await updateDoc(doc(db, 'goals', existing._docId), rest);
+    await updateDoc(doc(db, 'goals', existing._docId), cleanData(rest));
   };
+
 
   const deleteGoal = async (id: number) => {
     const existing = goals.find(g => g.id === id);

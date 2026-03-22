@@ -161,8 +161,9 @@ export function NewAssetForm({
         status: txStatus,
         horizon: assetHorizon,
         startDate: startDate,
-        goalId: selectedGoalId === '' ? undefined : Number(selectedGoalId)
+        goalId: selectedGoalId === '' ? null : Number(selectedGoalId)
       };
+
 
       if (isEditMode && assetId !== undefined) {
         await updateAsset(assetId, payload as any);

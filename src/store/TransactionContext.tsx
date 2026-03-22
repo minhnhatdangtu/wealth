@@ -70,6 +70,15 @@ type TransactionContextType = {
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
+// Helper to remove undefined for Firestore compat
+const cleanData = (obj: any) => {
+  const newObj = { ...obj };
+  Object.keys(newObj).forEach(key => 
+    newObj[key] === undefined && delete newObj[key]
+  );
+  return newObj;
+};
+
 export function TransactionProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +111,9 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
       });
       setTransactions(loaded);
       setLoading(false);
+    }, (error) => {
+      console.error("Firestore Transaction Listener Error:", error);
+      setLoading(false);
     });
     return () => unsub();
   }, []);
@@ -109,15 +121,16 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
   const addTransaction = async (newTx: Omit<TransactionType, 'id'>) => {
     const id = Date.now();
     const { icon: _i, _docId: _d, ...rest } = newTx as any;
-    await addDoc(collection(db, 'transactions'), { ...rest, id });
+    await addDoc(collection(db, 'transactions'), cleanData({ ...rest, id }));
   };
 
   const updateTransaction = async (id: number, updatedTx: Partial<TransactionType>) => {
     const existing = transactions.find(t => t.id === id);
     if (!existing?._docId) return;
     const { icon: _i, _docId: _d, ...rest } = updatedTx as any;
-    await updateDoc(doc(db, 'transactions', existing._docId), rest);
+    await updateDoc(doc(db, 'transactions', existing._docId), cleanData(rest));
   };
+
 
   return (
     <TransactionContext.Provider value={{

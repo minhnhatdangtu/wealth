@@ -67,6 +67,15 @@ function getAssetIcon(type: string) {
   return Activity;
 }
 
+// Helper to remove undefined for Firestore compat
+const cleanData = (obj: any) => {
+  const newObj = { ...obj };
+  Object.keys(newObj).forEach(key => 
+    newObj[key] === undefined && delete newObj[key]
+  );
+  return newObj;
+};
+
 export function PortfolioProvider({ children }: { children: ReactNode }) {
   const [assets, setAssets] = useState<AssetType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,15 +98,16 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   const addAsset = async (newAsset: Omit<AssetType, 'id'>) => {
     const id = Date.now();
     const { icon: _icon, _docId: _d, ...rest } = newAsset as any;
-    await addDoc(collection(db, 'assets'), { ...rest, id });
+    await addDoc(collection(db, 'assets'), cleanData({ ...rest, id }));
   };
 
   const updateAsset = async (id: number, updatedAsset: Omit<AssetType, 'id'>) => {
     const existing = assets.find(a => a.id === id);
     if (!existing?._docId) return;
     const { icon: _icon, _docId: _d, ...rest } = updatedAsset as any;
-    await updateDoc(doc(db, 'assets', existing._docId), rest);
+    await updateDoc(doc(db, 'assets', existing._docId), cleanData(rest));
   };
+
 
   const deleteAsset = async (id: number) => {
     const existing = assets.find(a => a.id === id);
