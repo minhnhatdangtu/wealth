@@ -1,11 +1,15 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export type GoalType = {
   id: number;
   name: string;
-  iconName: string; // 'Home' | 'GraduationCap' | 'ShieldCheck'
+  iconName: string;
   iconBgColor: string;
   iconTextColor: string;
   targetAmount: number;
@@ -18,36 +22,57 @@ export type GoalType = {
   statusTextColor?: string;
   progressColor?: string;
   trackColor?: string;
+  _docId?: string;
 };
-
-const defaultGoals: GoalType[] = [];
 
 type GoalContextType = {
   goals: GoalType[];
-  addGoal: (goal: Omit<GoalType, 'id'>) => void;
-  updateGoal: (id: number, goal: Partial<GoalType>) => void;
-  deleteGoal: (id: number) => void;
+  loading: boolean;
+  addGoal: (goal: Omit<GoalType, 'id'>) => Promise<void>;
+  updateGoal: (id: number, goal: Partial<GoalType>) => Promise<void>;
+  deleteGoal: (id: number) => Promise<void>;
 };
 
 const GoalContext = createContext<GoalContextType | undefined>(undefined);
 
+function mapDocToGoal(docId: string, data: any): GoalType {
+  return { ...data, id: data.id ?? Date.now(), _docId: docId };
+}
+
 export function GoalProvider({ children }: { children: ReactNode }) {
-  const [goals, setGoals] = useState<GoalType[]>(defaultGoals);
+  const [goals, setGoals] = useState<GoalType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addGoal = (goal: Omit<GoalType, 'id'>) => {
-    setGoals(prev => [...prev, { ...goal, id: Date.now() }]);
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'goals'), (snapshot) => {
+      const loaded = snapshot.docs.map(d => mapDocToGoal(d.id, d.data()));
+      setGoals(loaded);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  const addGoal = async (goal: Omit<GoalType, 'id'>) => {
+    const id = Date.now();
+    const { _docId: _d, ...rest } = goal as any;
+    await addDoc(collection(db, 'goals'), { ...rest, id });
   };
 
-  const updateGoal = (id: number, updatedGoal: Partial<GoalType>) => {
-    setGoals(prev => prev.map(g => g.id === id ? { ...g, ...updatedGoal } : g));
+  const updateGoal = async (id: number, updatedGoal: Partial<GoalType>) => {
+    const existing = goals.find(g => g.id === id);
+    if (!existing?._docId) return;
+    const { _docId: _d, ...rest } = updatedGoal as any;
+    await updateDoc(doc(db, 'goals', existing._docId), rest);
   };
 
-  const deleteGoal = (id: number) => {
-    setGoals(prev => prev.filter(g => g.id !== id));
+  const deleteGoal = async (id: number) => {
+    const existing = goals.find(g => g.id === id);
+    if (!existing?._docId) return;
+    await deleteDoc(doc(db, 'goals', existing._docId));
   };
 
   return (
-    <GoalContext.Provider value={{ goals, addGoal, updateGoal, deleteGoal }}>
+    <GoalContext.Provider value={{ goals, loading, addGoal, updateGoal, deleteGoal }}>
       {children}
     </GoalContext.Provider>
   );

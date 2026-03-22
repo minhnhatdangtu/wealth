@@ -1,37 +1,36 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Building2, TrendingUp, Gem, Landmark, PieChart } from 'lucide-react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export type AssetType = {
   id: number;
   name: string;
   type: string;
   icon: any;
-  iconBg: string; // Tailwind class
+  iconBg: string;
   quantity: string;
   cost: number;
   value: number;
-  status: string; // "ĐANG HOẠT ĐỘNG" or "ĐÃ TẤT TOÁN"
+  status: string;
   horizon: 'daihan' | 'nganhan';
   startDate?: string;
-  isCustomPriced?: boolean; // Flag if asset uses oracle pricing
-  goalId?: number; // Connects asset to goal
+  isCustomPriced?: boolean;
+  goalId?: number;
+  _docId?: string; // Firestore document ID
 };
 
-export const initialMarketPrices: Record<string, number> = {
-  'Vàng nhẫn SJC 9999': 74000000,
-  'Danh mục Cổ phiếu VN30': 43333.3333,
-  'Chứng chỉ quỹ DCDS': 11833.3333
-};
-
-const initialAssets: AssetType[] = [];
+export const initialMarketPrices: Record<string, number> = {};
 
 type PortfolioContextType = {
   assets: AssetType[];
-  addAsset: (asset: Omit<AssetType, 'id'>) => void;
-  updateAsset: (id: number, asset: Omit<AssetType, 'id'>) => void;
-  deleteAsset: (id: number) => void;
+  loading: boolean;
+  addAsset: (asset: Omit<AssetType, 'id'>) => Promise<void>;
+  updateAsset: (id: number, asset: Omit<AssetType, 'id'>) => Promise<void>;
+  deleteAsset: (id: number) => Promise<void>;
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
   marketPrices: Record<string, number>;
@@ -40,49 +39,74 @@ type PortfolioContextType = {
 
 const PortfolioContext = createContext<PortfolioContextType | undefined>(undefined);
 
+// Map Firestore doc to AssetType (icons are not stored in Firestore)
+function mapDocToAsset(docId: string, data: any): AssetType {
+  return {
+    ...data,
+    id: data.id ?? Date.now(),
+    _docId: docId,
+    icon: undefined, // icon is resolved at render time from type
+    iconBg: data.iconBg ?? 'bg-gray-100 text-gray-500',
+  };
+}
+
 export function PortfolioProvider({ children }: { children: ReactNode }) {
-  const [assets, setAssets] = useState<AssetType[]>(initialAssets);
+  const [assets, setAssets] = useState<AssetType[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [marketPrices, setMarketPrices] = useState<Record<string, number>>(initialMarketPrices);
 
-  const addAsset = (newAsset: Omit<AssetType, 'id'>) => {
-    setAssets(prev => [
-      { id: Date.now(), ...newAsset },
-      ...prev
-    ]);
+  // Real-time listener from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'assets'), (snapshot) => {
+      const loaded = snapshot.docs.map(d => mapDocToAsset(d.id, d.data()));
+      setAssets(loaded);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  const addAsset = async (newAsset: Omit<AssetType, 'id'>) => {
+    const id = Date.now();
+    const { icon: _icon, _docId: _d, ...rest } = newAsset as any;
+    await addDoc(collection(db, 'assets'), { ...rest, id });
   };
 
-  const updateAsset = (id: number, updatedAsset: Omit<AssetType, 'id'>) => {
-    setAssets(prev => prev.map(a => a.id === id ? { ...a, ...updatedAsset } : a));
+  const updateAsset = async (id: number, updatedAsset: Omit<AssetType, 'id'>) => {
+    const existing = assets.find(a => a.id === id);
+    if (!existing?._docId) return;
+    const { icon: _icon, _docId: _d, ...rest } = updatedAsset as any;
+    await updateDoc(doc(db, 'assets', existing._docId), { ...rest, id });
   };
 
-  const deleteAsset = (id: number) => {
-    setAssets(prev => prev.filter(a => a.id !== id));
+  const deleteAsset = async (id: number) => {
+    const existing = assets.find(a => a.id === id);
+    if (!existing?._docId) return;
+    await deleteDoc(doc(db, 'assets', existing._docId));
   };
 
   const updateMarketPrice = (ticker: string, price: number) => {
     setMarketPrices(prev => ({ ...prev, [ticker]: price }));
   };
 
-  // Compute live values through Oracle dictionary dynamically
+  // Resolve icon from type at render time
   const computedAssets = assets.map(a => {
-    if (a.status === 'HOẠT ĐỘNG' && marketPrices[a.name] !== undefined) {
-      const rawNumStr = a.quantity.split(' ')[0].replace(/,/g, '');
-      const rawNum = parseFloat(rawNumStr);
-      if (!isNaN(rawNum)) {
-        return { ...a, value: Math.round(rawNum * marketPrices[a.name]), isCustomPriced: true };
-      }
+    let icon = a.icon;
+    if (!icon) {
+      // Lazily resolved in components via getAssetIcon(type) 
+      icon = null;
     }
-    return { ...a, isCustomPriced: false };
+    return { ...a, icon, isCustomPriced: false };
   });
 
   return (
-    <PortfolioContext.Provider value={{ 
-      assets: computedAssets, 
-      addAsset, 
-      updateAsset, 
+    <PortfolioContext.Provider value={{
+      assets: computedAssets,
+      loading,
+      addAsset,
+      updateAsset,
       deleteAsset,
-      selectedCategory, 
+      selectedCategory,
       setSelectedCategory,
       marketPrices,
       updateMarketPrice
