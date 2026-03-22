@@ -4,6 +4,7 @@ import { usePortfolio } from '@/store/PortfolioContext';
 import Link from 'next/link';
 import { ArrowLeft, Edit3, Settings2, Pencil, Trash2, Info } from 'lucide-react';
 import React, { useState } from 'react';
+import { formatCurrency } from '@/utils/format-utils';
 
 export default function AllAssetsPage() {
   const { assets, marketPrices, updateMarketPrice, deleteAsset } = usePortfolio();
@@ -11,9 +12,7 @@ export default function AllAssetsPage() {
   const [tempPriceStr, setTempPriceStr] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
 
-  const formatVND = (num: number) => {
-    return new Intl.NumberFormat('vi-VN').format(Math.abs(num)).replace(/,/g, '.');
-  };
+  const formatVND = (num: number) => formatCurrency(num);
 
   const renderDate = (dateString?: string) => {
     if (!dateString) return <span className="text-gray-300">--</span>;

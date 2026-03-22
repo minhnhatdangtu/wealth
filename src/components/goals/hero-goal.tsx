@@ -6,6 +6,7 @@ import * as LucideIcons from 'lucide-react';
 import { Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { getGoalStatus, formatGoalDeadline } from '@/utils/goal-utils';
+import { formatCurrency } from '@/utils/format-utils';
 
 export function HeroGoal() {
   const { goals, deleteGoal } = useGoals();
@@ -21,7 +22,7 @@ export function HeroGoal() {
   // Typecasting to access Lucide icons dynamically
   const IconComponent = (LucideIcons as any)[heroGoal.iconName] || LucideIcons.Home;
   
-  const formatVND = (value: number) => new Intl.NumberFormat('vi-VN').format(value);
+  const formatVND = (value: number) => formatCurrency(value);
 
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   

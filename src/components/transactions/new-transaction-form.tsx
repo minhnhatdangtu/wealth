@@ -8,6 +8,7 @@ import {
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTransactions, TransactionType } from '@/store/TransactionContext';
+import { formatCurrency, parseCurrency } from '@/utils/format-utils';
 
 const assetCategories = [
   { id: 'bds', label: 'Bất động sản', icon: Building2 },
@@ -67,7 +68,7 @@ export function NewTransactionForm({
       setAmount('');
       return;
     }
-    const formatted = new Intl.NumberFormat('vi-VN').format(parseInt(rawValue, 10));
+    const formatted = formatCurrency(parseInt(rawValue, 10));
     setAmount(formatted);
   };
 
@@ -96,7 +97,7 @@ export function NewTransactionForm({
       iconBg = 'bg-blue-100 text-blue-700';
     }
 
-    const parsedAmount = parseInt(amount.replace(/\./g, '') || '0', 10);
+    const parsedAmount = parseCurrency(amount);
 
     const payload = {
       date: new Date(date).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' }) + '\n10:00 AM',

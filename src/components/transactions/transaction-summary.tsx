@@ -2,6 +2,7 @@
 
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useTransactions, parseTxDate } from '@/store/TransactionContext';
+import { formatCurrency } from '@/utils/format-utils';
 
 export function TransactionSummary() {
   const { transactions, dateRange } = useTransactions();
@@ -36,7 +37,7 @@ export function TransactionSummary() {
 
   const available = Math.max(0, inTotal - outTotal - invTotal);
 
-  const formatVND = (num: number) => new Intl.NumberFormat('vi-VN').format(num);
+  const formatVND = (num: number) => formatCurrency(num);
 
   const getPercentageString = (current: number, prev: number) => {
     if (prev === 0) return current > 0 ? '+100.0%' : '0.0%';

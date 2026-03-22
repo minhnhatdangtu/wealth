@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePortfolio } from '@/store/PortfolioContext';
 
-const formatVND = (v: number) => new Intl.NumberFormat('vi-VN').format(Math.abs(v)).replace(/,/g, '.');
+import { formatCurrency, formatNumber } from '@/utils/format-utils';
+
+const formatVND = (v: number) => formatCurrency(Math.abs(v));
 
 export function DetailedHoldings() {
   const { assets, selectedCategory } = usePortfolio();
@@ -143,7 +145,7 @@ export function DetailedHoldings() {
                   </td>
                   <td className="px-4 py-6 font-bold text-center text-text-main">
                     <div className="flex flex-col items-center leading-tight">
-                      <span>{item.totalQuantity > 0 ? new Intl.NumberFormat('vi-VN').format(item.totalQuantity) : '—'}</span>
+                      <span>{item.totalQuantity > 0 ? formatNumber(item.totalQuantity) : '—'}</span>
                       {item.qtyUnit && <span className="text-[11px] font-semibold text-text-muted mt-0.5 uppercase">{item.qtyUnit}</span>}
                     </div>
                   </td>

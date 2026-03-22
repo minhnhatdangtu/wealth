@@ -4,6 +4,7 @@ import { TrendingUp, Activity, CheckCircle2 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, XAxis, CartesianGrid, Tooltip } from 'recharts';
 import { usePortfolio } from '@/store/PortfolioContext';
 import { useMemo } from 'react';
+import { formatCurrency } from '@/utils/format-utils';
 
 const data = [
   { name: 'THÁNG 12', value: 34000 },
@@ -31,13 +32,11 @@ export function PortfolioChart() {
     return { activeCost, activeValue, activePL, closedPL };
   }, [assets]);
 
-  const formatVND = (num: number) => {
-    if (num === 0) return '0';
-    return new Intl.NumberFormat('vi-VN').format(num);
-  };
+  const formatVND = (num: number) => formatCurrency(num);
+
   const formatVNDSign = (num: number) => {
     if (num === 0) return '0';
-    const s = new Intl.NumberFormat('vi-VN').format(Math.abs(num));
+    const s = formatCurrency(Math.abs(num));
     return num >= 0 ? `+${s}` : `-${s}`;
   };
 

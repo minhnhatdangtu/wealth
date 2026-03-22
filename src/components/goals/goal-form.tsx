@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoalType, useGoals } from '@/store/GoalContext';
 import { usePortfolio } from '@/store/PortfolioContext';
+import { formatCurrency, parseCurrency } from '@/utils/format-utils';
 import { ArrowLeft, Target, Home, GraduationCap, ShieldCheck, PiggyBank, Car, Plane, Briefcase } from 'lucide-react';
 import { getGoalStatus } from '@/utils/goal-utils';
 import Link from 'next/link';
@@ -63,7 +64,7 @@ export function GoalForm({ initialData }: { initialData?: GoalType }) {
   };
 
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
-    const rawValue = e.target.value.replace(/\D/g, ''); // Loại bỏ mọi ký tự không phải số
+    const rawValue = e.target.value.replace(/\D/g, '');
     setFormData(prev => ({ ...prev, [fieldName]: rawValue }));
   };
 
@@ -71,7 +72,7 @@ export function GoalForm({ initialData }: { initialData?: GoalType }) {
     if (!val) return '';
     const num = parseInt(val, 10);
     if (isNaN(num)) return '';
-    return new Intl.NumberFormat('vi-VN').format(num);
+    return formatCurrency(num);
   };
 
   const handleIconSelect = (iconName: string) => {

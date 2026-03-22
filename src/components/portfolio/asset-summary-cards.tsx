@@ -3,6 +3,7 @@
 import { Building2, TrendingUp, Gem, Landmark, PieChart } from 'lucide-react';
 import { usePortfolio } from '@/store/PortfolioContext';
 import { useMemo } from 'react';
+import { formatCurrency } from '@/utils/format-utils';
 
 export function AssetSummaryCards() {
   const { assets, selectedCategory, setSelectedCategory } = usePortfolio();
@@ -33,10 +34,7 @@ export function AssetSummaryCards() {
     });
   }, [assets]);
 
-  const formatVND = (num: number) => {
-    if (num === 0) return '0';
-    return new Intl.NumberFormat('vi-VN').format(num);
-  };
+  const formatVND = (num: number) => formatCurrency(Math.abs(num));
 
   const formatSign = (num: number, pct: number) => {
     if (num === 0) return '0';

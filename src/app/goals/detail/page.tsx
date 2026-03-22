@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { ArrowLeft, Target, Calendar, TrendingUp, Info, History } from 'lucide-react';
 import { GoalHistoryTable } from '@/components/goals/goal-history-table';
 import { getGoalStatus, formatGoalDeadline } from '@/utils/goal-utils';
+import { formatCurrency, formatNumber } from '@/utils/format-utils';
 
 function GoalDetailContent() {
   const searchParams = useSearchParams();
@@ -30,9 +31,9 @@ function GoalDetailContent() {
   );
 
   const formatVNDText = (num: number) => {
-    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + ' tỷ';
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + ' tr';
-    return new Intl.NumberFormat('vi-VN').format(num) + ' đ';
+    if (num >= 1000000000) return formatNumber(num / 1000000000, 1) + ' tỷ';
+    if (num >= 1000000) return formatNumber(num / 1000000, 1) + ' tr';
+    return formatCurrency(num);
   };
 
   const currentAmount = assets.filter(a => a.goalId === goal.id).reduce((sum, a) => sum + a.value, 0);

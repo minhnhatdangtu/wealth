@@ -1,15 +1,15 @@
 import { usePortfolio } from '@/store/PortfolioContext';
 import { getCategoryColor } from '@/utils/goal-utils';
 import { History } from 'lucide-react';
+import { formatCurrency } from '@/utils/format-utils';
 
 export function GoalHistoryTable({ goalId }: { goalId: number }) {
   const { assets } = usePortfolio();
   
   const linkedAssets = assets.filter(a => a.goalId === goalId);
 
-  const formatVND = (value: number) => {
-    return new Intl.NumberFormat('vi-VN').format(value);
-  };
+  const formatVND = (value: number) => formatCurrency(value);
+
 
   const formatDatePill = (dateStr?: string) => {
     if (!dateStr || dateStr === 'Đang cập nhật') return 'Đang cập nhật';

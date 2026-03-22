@@ -8,8 +8,9 @@ import {
   Calendar, Activity
 } from 'lucide-react';
 
-const fmtVND = (v: number) =>
-  new Intl.NumberFormat('vi-VN').format(Math.abs(Math.round(v)));
+import { formatCurrency, formatNumber } from '@/utils/format-utils';
+
+const fmtVND = (v: number) => formatCurrency(Math.abs(Math.round(v)));
 
 const fmtDate = (d?: string) => {
   if (!d) return '—';
@@ -47,7 +48,7 @@ function ExtraMetrics({ type, active }: { type: string; active: any[] }) {
     const avgCostPerM2 = totalArea > 0 ? totalCost / totalArea : 0;
     return (
       <>
-        <MetricCell label="Tổng diện tích" value={`${new Intl.NumberFormat('vi-VN').format(totalArea)}`} unit="m²" />
+        <MetricCell label="Tổng diện tích" value={formatNumber(totalArea)} unit="m²" />
         <MetricCell label="Giá vốn TB / m²" value={fmtVND(avgCostPerM2)} unit="VNĐ" />
       </>
     );
@@ -57,7 +58,7 @@ function ExtraMetrics({ type, active }: { type: string; active: any[] }) {
     const avgCost = totalQty > 0 ? totalCost / totalQty : 0;
     return (
       <>
-        <MetricCell label="Tổng khối lượng" value={new Intl.NumberFormat('vi-VN').format(totalQty)} unit="CP" />
+        <MetricCell label="Tổng khối lượng" value={formatNumber(totalQty)} unit="CP" />
         <MetricCell label="Giá vốn TB / CP" value={fmtVND(avgCost)} unit="VNĐ" />
       </>
     );
@@ -67,7 +68,7 @@ function ExtraMetrics({ type, active }: { type: string; active: any[] }) {
     const avgCost = totalQty > 0 ? totalCost / totalQty : 0;
     return (
       <>
-        <MetricCell label="Tổng khối lượng" value={new Intl.NumberFormat('vi-VN').format(totalQty)} unit="CCQ" />
+        <MetricCell label="Tổng khối lượng" value={formatNumber(totalQty)} unit="CCQ" />
         <MetricCell label="Giá vốn TB / CCQ" value={fmtVND(avgCost)} unit="VNĐ" />
       </>
     );
@@ -77,7 +78,7 @@ function ExtraMetrics({ type, active }: { type: string; active: any[] }) {
     const avgCost = totalQty > 0 ? totalCost / totalQty : 0;
     return (
       <>
-        <MetricCell label="Tổng khối lượng" value={new Intl.NumberFormat('vi-VN').format(totalQty)} unit="Chỉ" />
+        <MetricCell label="Tổng khối lượng" value={formatNumber(totalQty)} unit="Chỉ" />
         <MetricCell label="Giá vốn TB / Chỉ" value={fmtVND(avgCost)} unit="VNĐ" />
       </>
     );

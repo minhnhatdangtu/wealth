@@ -8,6 +8,7 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePortfolio, AssetType } from '@/store/PortfolioContext';
 import { useGoals } from '@/store/GoalContext';
+import { formatCurrency, formatNumber, parseCurrency, parseDecimal as utilParseDecimal } from '@/utils/format-utils';
 
 const assetCategories = [
   { id: 'tietkiem', label: 'Tiết kiệm & Quỹ', icon: Landmark },
@@ -65,13 +66,9 @@ export function NewAssetForm({
 
   // Number/Money tracking 
   // Unified helper parser
-  const parseNum = (val: string) => parseInt(val.replace(/\./g, '').replace(/,/g, '') || '0', 10);
-  const parseDecimal = (val: string) => {
-    // Convert Vietnamese decimal (,) or generic (.) to standard float
-    const cleaned = val.replace(/\./g, '').replace(/,/g, '.');
-    return parseFloat(cleaned) || 0;
-  };
-  const parseStr = (num: number) => new Intl.NumberFormat('vi-VN').format(num);
+  const parseNum = (val: string) => parseCurrency(val);
+  const parseDecimal = (val: string) => utilParseDecimal(val);
+  const parseStr = (num: number) => formatCurrency(num);
 
   const [quantityVal, setQuantityVal] = useState<string>(() => {
     if (initialData && initialData.type !== 'Tiết kiệm & Quỹ' && initialData.type !== 'Bất động sản') {
@@ -114,17 +111,21 @@ export function NewAssetForm({
   };
 
   const handleQtyFormat = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow digits and only ONE decimal separator (comma or dot)
     const val = e.target.value;
-    const sanitized = val.replace(/[^0-9,.]/g, '');
+    // Normalize . to , and remove everything but digits and ONE comma
+    const normalized = val.replace(/\./g, ',');
+    const sanitized = normalized.replace(/[^0-9,]/g, '');
     
-    // Check if it's just a decimal dot/comma to allow typing it
-    if (sanitized === ',' || sanitized === '.') {
+    // Ensure only one comma
+    const parts = sanitized.split(',');
+    const finalVal = parts.length > 2 ? parts[0] + ',' + parts.slice(1).join('') : sanitized;
+
+    if (finalVal === ',') {
       setQuantityVal('0,');
       return;
     }
     
-    setQuantityVal(sanitized);
+    setQuantityVal(finalVal);
   };
 
 

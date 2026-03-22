@@ -3,6 +3,7 @@
 import { usePortfolio } from '@/store/PortfolioContext';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { formatCurrency } from '@/utils/format-utils';
 
 export function HeroStats() {
   const { assets } = usePortfolio();
@@ -65,7 +66,8 @@ export function HeroStats() {
   const tBDS = getCatValue(['bất động sản']);
   const tVang = getCatValue(['vàng']);
 
-  const fmtVND = (v: number) => new Intl.NumberFormat('vi-VN').format(v);
+  const fmtVND = (v: number) => formatCurrency(v);
+
 
   return (
     <div className="bg-[#121950] rounded-2xl p-8 text-white relative overflow-hidden shadow-xl shadow-primary/10">
