@@ -160,7 +160,7 @@ export function TransactionHistoryTable() {
                   <td className={clsx('px-4 py-6 text-right font-bold text-lg relative', rowAmountColor)}>
                     <span className="pr-8 block">{tx.amount}</span>
                     <Link 
-                      href={`/transactions/${tx.id}/edit`} 
+                      href={`/transactions/edit?id=${tx.id}`} 
                       className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg flex-shrink-0"
                       title="Chỉnh sửa giao dịch"
                     >

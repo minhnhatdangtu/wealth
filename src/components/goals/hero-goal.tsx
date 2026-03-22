@@ -102,12 +102,13 @@ export function HeroGoal() {
           </div>
 
           <div className="flex gap-4">
-            <Link href={`/goals/${heroGoal.id}`} className="bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center inline-block">
+            <Link href={`/goals/detail?id=${heroGoal.id}`} className="bg-primary hover:bg-primary-dark text-white font-bold py-3.5 px-8 rounded-xl transition-colors text-center inline-block">
               Xem chi tiết
             </Link>
-            <Link href={`/goals/${heroGoal.id}/edit`} className="bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3.5 px-8 rounded-xl transition-colors text-center inline-block">
+            <Link href={`/goals/edit?id=${heroGoal.id}`} className="bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3.5 px-8 rounded-xl transition-colors text-center inline-block">
               Điều chỉnh chiến lược
             </Link>
+
           </div>
         </div>
       </div>

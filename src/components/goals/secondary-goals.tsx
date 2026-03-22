@@ -79,12 +79,13 @@ export function SecondaryGoals() {
               </div>
 
               <div className="flex flex-col gap-2.5 mt-2">
-                <Link href={`/goals/${goal.id}`} className="w-full text-center bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-xl transition-colors">
+                <Link href={`/goals/detail?id=${goal.id}`} className="w-full text-center bg-primary hover:bg-primary-dark text-white font-bold py-3.5 rounded-xl transition-colors">
                   Xem chi tiết
                 </Link>
-                <Link href={`/goals/${goal.id}/edit`} className="w-full text-center bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3.5 rounded-xl transition-colors">
+                <Link href={`/goals/edit?id=${goal.id}`} className="w-full text-center bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3.5 rounded-xl transition-colors">
                   Điều chỉnh chiến lược
                 </Link>
+
               </div>
             </div>
           </div>

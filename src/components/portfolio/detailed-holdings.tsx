@@ -113,7 +113,7 @@ export function DetailedHoldings() {
               const isProfit = item.plAbs >= 0;
               const plColorClass = isProfit ? 'text-emerald-500' : 'text-rose-500';
               const sign = isProfit ? '+' : '';
-              const detailHref = `/portfolio/assets/${encodeURIComponent(item.name)}`;
+              const detailHref = `/portfolio/assets/detail?name=${encodeURIComponent(item.name)}`;
 
               return (
                 <tr
