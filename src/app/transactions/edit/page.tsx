@@ -31,7 +31,7 @@ function TransactionEditContent() {
       </Link>
       <div className="bg-white rounded-[32px] p-8 lg:p-10 shadow-sm border border-border-subtle overflow-hidden">
         <h1 className="text-3xl font-extrabold text-primary tracking-tight mb-8">Chỉnh sửa giao dịch</h1>
-        <NewTransactionForm isEditMode initialData={tx} txId={tx.id} />
+        <NewTransactionForm initialData={tx} transactionId={tx.id} />
       </div>
     </div>
   );
