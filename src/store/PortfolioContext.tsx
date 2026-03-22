@@ -6,6 +6,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Building2, TrendingUp, Gem, Landmark, PieChart, Activity } from 'lucide-react';
+import { parseDecimal as utilParseDecimal } from '@/utils/format-utils';
 
 export type AssetType = {
   id: number;
@@ -143,9 +144,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     let isCustom = false;
     
     if (a.status === 'HOẠT ĐỘNG' && marketPrices[a.name] !== undefined) {
-      const rawNumStr = (a.quantity || '').split(' ')[0].replace(/,/g, '');
-      const rawNum = parseFloat(rawNumStr);
-      if (!isNaN(rawNum)) {
+      const rawNum = utilParseDecimal((a.quantity || ''));
+      if (rawNum > 0) {
         finalValue = Math.round(rawNum * marketPrices[a.name]);
         isCustom = true;
       }

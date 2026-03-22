@@ -52,7 +52,7 @@ export function NewAssetForm({
   
   // Savings states
   const [monthTerm, setMonthTerm] = useState(() => {
-    if (initialData?.type === 'Tiết kiệm & Quỹ') return parseFloat(initialData.quantity) || 0;
+    if (initialData?.type === 'Tiết kiệm & Quỹ') return utilParseDecimal(initialData.quantity);
     return 6;
   });
   const [interestRate, setInterestRate] = useState(5.5);
@@ -60,7 +60,7 @@ export function NewAssetForm({
   // Real Estate states
   const [bdsType, setBdsType] = useState('Căn hộ');
   const [bdsArea, setBdsArea] = useState(() => {
-    if (initialData?.type === 'Bất động sản') return parseFloat(initialData.quantity) || 0;
+    if (initialData?.type === 'Bất động sản') return utilParseDecimal(initialData.quantity);
     return 0;
   });
 
@@ -72,9 +72,8 @@ export function NewAssetForm({
 
   const [quantityVal, setQuantityVal] = useState<string>(() => {
     if (initialData && initialData.type !== 'Tiết kiệm & Quỹ' && initialData.type !== 'Bất động sản') {
-      // Keep decimal if present in initial data
-      const q = parseFloat(initialData.quantity.replace(/[^0-9,.]/g, '').replace(',', '.'));
-      return isNaN(q) ? '' : new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 4 }).format(q);
+      const q = utilParseDecimal(initialData.quantity);
+      return q === 0 ? '' : formatNumber(q, 4);
     }
     return '';
   });
@@ -167,7 +166,7 @@ export function NewAssetForm({
       if (assetType === 'vang') finalQuantityString = `${quantityVal || '0'} Chỉ`;
       if (assetType === 'chungkhoan') finalQuantityString = `${quantityVal || '0'} CP`;
       if (assetType === 'chungchiquy') finalQuantityString = `${quantityVal || '0'} CCQ`;
-      if (assetType === 'bds') finalQuantityString = `${parseStr(bdsArea)} m2`;
+      if (assetType === 'bds') finalQuantityString = `${formatNumber(bdsArea)} m2`;
 
       const payload = {
         name: name || 'Tài sản mới',

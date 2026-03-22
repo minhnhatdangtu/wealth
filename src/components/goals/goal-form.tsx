@@ -83,7 +83,7 @@ export function GoalForm({ initialData }: { initialData?: GoalType }) {
     e.preventDefault();
     
     const selectedIcon = AVAILABLE_ICONS.find(i => i.name === formData.iconName) || AVAILABLE_ICONS[0];
-    const targetAmt = parseFloat(formData.targetAmount) || 0;
+    const targetAmt = parseCurrency(formData.targetAmount);
     const currentAmt = isEditing && initialData ? assets.filter(a => a.goalId === initialData.id).reduce((sum, a) => sum + a.value, 0) : 0;
     
     const statusData = getGoalStatus(currentAmt, targetAmt);
