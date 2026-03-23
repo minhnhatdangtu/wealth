@@ -218,9 +218,9 @@ export default function AllAssetsPage() {
                   <tr key={item.id} className="hover:bg-slate-50/80 transition-colors duration-300 group">
                     <td className="px-4 py-6">
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center ${item.iconBg}`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
+                        <div className={clsx('w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300', item.iconBg)}>
+                        <Icon size={20} />
+                      </div>
                         <div className="whitespace-nowrap">
                           <p className="font-bold text-text-main text-[15px]">{item.name}</p>
                           <p className="text-xs text-text-muted mt-0.5">{renderDate(item.startDate)}</p>

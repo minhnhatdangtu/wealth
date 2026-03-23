@@ -64,9 +64,20 @@ function getAssetIcon(type: string) {
   if (t.includes('bất động sản')) return Building2;
   if (t.includes('chứng khoán')) return TrendingUp;
   if (t.includes('vàng')) return Gem;
-  if (t.includes('quỹ') || t.includes('tiết kiệm')) return Landmark;
   if (t.includes('chứng chỉ')) return PieChart;
+  if (t.includes('quỹ') || t.includes('tiết kiệm')) return Landmark;
   return Activity;
+}
+
+// Resolve color from type at render time
+function getAssetColor(type: string) {
+  const t = (type || '').toLowerCase();
+  if (t.includes('bất động sản')) return 'bg-blue-100 text-blue-700';
+  if (t.includes('chứng khoán')) return 'bg-sky-100 text-sky-700';
+  if (t.includes('vàng')) return 'bg-amber-100 text-amber-700';
+  if (t.includes('chứng chỉ')) return 'bg-rose-100 text-rose-700';
+  if (t.includes('quỹ') || t.includes('tiết kiệm')) return 'bg-emerald-100 text-emerald-700';
+  return 'bg-gray-100 text-gray-700';
 }
 
 // Helper to remove undefined for Firestore compat
@@ -154,6 +165,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     return { 
       ...a, 
       icon: getAssetIcon(a.type), 
+      iconBg: getAssetColor(a.type),
       value: finalValue,
       isCustomPriced: isCustom 
     };
