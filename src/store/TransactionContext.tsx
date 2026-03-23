@@ -53,6 +53,7 @@ type TransactionContextType = {
   transactions: TransactionType[];
   loading: boolean;
   addTransaction: (tx: Omit<TransactionType, 'id'>) => Promise<void>;
+  updateTransaction: (id: number, tx: Partial<TransactionType>) => Promise<void>;
   deleteTransaction: (id: number) => Promise<void>;
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
