@@ -111,7 +111,7 @@ export function TransactionHistoryTable() {
               <th className="px-4 py-4 text-left">NỘI DUNG & DANH MỤC</th>
               <th className="px-4 py-4 text-center w-36">TRẠNG THÁI</th>
               <th className="px-4 py-4 w-48 cursor-pointer hover:bg-gray-50/50 transition-colors select-none group" onClick={() => handleSort('amount')}>
-                <div className="flex items-center justify-end pr-8">
+                <div className="flex items-center justify-end pr-24">
                   SỐ TIỀN (VNĐ) {renderSortIcon('amount')}
                 </div>
               </th>
@@ -158,7 +158,7 @@ export function TransactionHistoryTable() {
                     </span>
                   </td>
                   <td className={clsx('px-4 py-6 text-right font-bold text-lg relative', rowAmountColor)}>
-                    <span className="pr-8 block">{tx.amount}</span>
+                    <span className="pr-24 block">{tx.amount}</span>
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                       <Link 
                         href={`/transactions/edit?id=${tx.id}`} 
