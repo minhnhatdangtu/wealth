@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Pencil, ArrowDown, ArrowUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pencil, Trash2, ArrowDown, ArrowUp } from 'lucide-react';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { useTransactions, parseTxDate } from '@/store/TransactionContext';
@@ -10,7 +10,7 @@ export function TransactionHistoryTable() {
   const { 
     transactions, dateRange,
     filterType, filterCategory, filterStatus, filterSearch,
-    sortConfig, setSortConfig
+    sortConfig, setSortConfig, deleteTransaction
   } = useTransactions();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -159,13 +159,27 @@ export function TransactionHistoryTable() {
                   </td>
                   <td className={clsx('px-4 py-6 text-right font-bold text-lg relative', rowAmountColor)}>
                     <span className="pr-8 block">{tx.amount}</span>
-                    <Link 
-                      href={`/transactions/edit?id=${tx.id}`} 
-                      className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg flex-shrink-0"
-                      title="Chỉnh sửa giao dịch"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Link>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                      <Link 
+                        href={`/transactions/edit?id=${tx.id}`} 
+                        className="p-2 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg flex-shrink-0"
+                        title="Chỉnh sửa giao dịch"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm('Bạn có chắc chắn muốn xóa giao dịch này không?')) {
+                            deleteTransaction(tx.id);
+                          }
+                        }}
+                        className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg flex-shrink-0"
+                        title="Xóa giao dịch"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

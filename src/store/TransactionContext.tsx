@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
-  collection, addDoc, updateDoc, doc, onSnapshot
+  collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Building2, LineChart, ShoppingBag, Landmark, Gem, PieChart } from 'lucide-react';
@@ -53,7 +53,7 @@ type TransactionContextType = {
   transactions: TransactionType[];
   loading: boolean;
   addTransaction: (tx: Omit<TransactionType, 'id'>) => Promise<void>;
-  updateTransaction: (id: number, tx: Partial<TransactionType>) => Promise<void>;
+  deleteTransaction: (id: number) => Promise<void>;
   dateRange: DateRange;
   setDateRange: (range: DateRange) => void;
   filterType: string;
@@ -131,10 +131,16 @@ export function TransactionProvider({ children }: { children: ReactNode }) {
     await updateDoc(doc(db, 'transactions', existing._docId), cleanData(rest));
   };
 
+  const deleteTransaction = async (id: number) => {
+    const existing = transactions.find(t => t.id === id);
+    if (!existing?._docId) return;
+    await deleteDoc(doc(db, 'transactions', existing._docId));
+  };
+
 
   return (
     <TransactionContext.Provider value={{
-      transactions, loading, addTransaction, updateTransaction,
+      transactions, loading, addTransaction, updateTransaction, deleteTransaction,
       dateRange, setDateRange,
       filterType, setFilterType,
       filterCategory, setFilterCategory,
