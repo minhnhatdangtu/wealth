@@ -130,7 +130,7 @@ export function DetailedHoldings() {
                   const Icon = item.icon;
                   const isProfit = item.plAbs >= 0;
                   const plColorClass = isProfit ? 'text-emerald-500' : 'text-rose-500';
-                  const sign = isProfit ? '+' : '';
+                  const sign = item.plAbs > 0 ? '+' : (item.plAbs < 0 ? '-' : '');
                   const detailHref = `/portfolio/assets/detail?name=${encodeURIComponent(item.name)}`;
 
                   return (
@@ -174,7 +174,7 @@ export function DetailedHoldings() {
                       <td className={`px-4 py-6 font-bold text-right tracking-tight ${plColorClass}`}>
                         <div className="flex flex-col items-end">
                           <span className="text-sm">{sign}{formatVND(item.plAbs)}</span>
-                          <span className="text-xs mt-0.5">{sign}{item.plPct.toFixed(1)}%</span>
+                           <span className="text-xs mt-0.5">{sign}{Math.abs(item.plPct).toFixed(1)}%</span>
                         </div>
                       </td>
                     </tr>
