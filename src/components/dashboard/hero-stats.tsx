@@ -23,23 +23,31 @@ export function HeroStats() {
   const chartData = [];
   
   for (let i = 5; i >= 0; i--) {
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const lastDayOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
     
     const monthValue = activeAssets.reduce((sum, a) => {
-      // If no startDate, assume it was there from the beginning for tracking purposes
-      if (!a.startDate) return sum + a.value; 
+      if (!a.startDate) return sum + a.value;
       const startDate = new Date(a.startDate);
-      if (startDate <= lastDayOfMonth) {
-         return sum + a.value;
-      }
-      return sum;
+      if (startDate > lastDayOfMonth) return sum;
+
+      // Interpolation logic:
+      // totalMonths: from startDate to today
+      // currentMonths: from startDate to the month being calculated
+      const totalInterval = now.getTime() - startDate.getTime();
+      const currentInterval = lastDayOfMonth.getTime() - startDate.getTime();
+      
+      if (totalInterval <= 1000 * 60 * 60 * 24) return sum + a.value; // Less than a day
+      
+      const ratio = Math.min(1, Math.max(0, currentInterval / totalInterval));
+      const interpolatedValue = a.cost + (a.value - a.cost) * ratio;
+      return sum + interpolatedValue;
     }, 0);
     
-    // Format Month (e.g., TH03)
     const monthStr = `TH${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}`;
     chartData.push({
       name: monthStr,
-      value: monthValue
+      value: Math.round(monthValue)
     });
   }
 

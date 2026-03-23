@@ -63,9 +63,14 @@ export default function AllAssetsPage() {
   });
 
   const categories = ['Tất cả', ...Array.from(new Set(assets.map(a => a.type)))];
-  const filteredAssets = selectedCategory === 'Tất cả' 
+  const filteredAssets = (selectedCategory === 'Tất cả' 
     ? assets 
-    : assets.filter(a => a.type === selectedCategory);
+    : assets.filter(a => a.type === selectedCategory)
+  ).sort((a, b) => {
+    const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+    const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+    return dateB - dateA;
+  });
 
   return (
     <div className="space-y-12 max-w-7xl mx-auto pb-16">

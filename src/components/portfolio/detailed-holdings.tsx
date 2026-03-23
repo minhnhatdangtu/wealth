@@ -1,7 +1,6 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePortfolio } from '@/store/PortfolioContext';
@@ -64,6 +63,15 @@ export function DetailedHoldings() {
     return { ...group, status, plAbs, plPct };
   }).sort((a, b) => b.plPct - a.plPct);
 
+  // 5. Group by Category
+  const categoryGroups = groupedHoldings.reduce((acc, item) => {
+    if (!acc[item.type]) acc[item.type] = [];
+    acc[item.type].push(item);
+    return acc;
+  }, {} as Record<string, typeof groupedHoldings>);
+  
+  const sortedCategories = Object.keys(categoryGroups).sort();
+
   return (
     <div className="bg-white rounded-[24px] p-8 lg:p-10 shadow-sm border border-border-subtle overflow-hidden mt-12">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
@@ -110,60 +118,69 @@ export function DetailedHoldings() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {groupedHoldings.map((item) => {
-              const Icon = item.icon;
-              const isProfit = item.plAbs >= 0;
-              const plColorClass = isProfit ? 'text-emerald-500' : 'text-rose-500';
-              const sign = isProfit ? '+' : '';
-              const detailHref = `/portfolio/assets/detail?name=${encodeURIComponent(item.name)}`;
-
-              return (
-                <tr
-                  key={item.name}
-                  onClick={() => router.push(detailHref)}
-                  className="hover:bg-gray-50/50 cursor-pointer transition-colors group"
-                >
-                  <td className="px-4 py-6">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.iconBg}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="whitespace-nowrap">
-                        <p className="font-bold text-text-main">{item.name}</p>
-                        <p className="text-xs text-text-muted mt-0.5">{item.type}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-6 font-medium text-center">
-                    <span className={`px-3 py-1 text-[10px] font-bold rounded-full border whitespace-nowrap ${
-                      item.status === 'HOẠT ĐỘNG'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        : 'bg-gray-50 text-text-muted border-gray-200'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-6 font-bold text-center text-text-main">
-                    <div className="flex flex-col items-center leading-tight">
-                      <span>{item.totalQuantity > 0 ? formatNumber(item.totalQuantity) : '—'}</span>
-                      {item.qtyUnit && <span className="text-[11px] font-semibold text-text-muted mt-0.5 uppercase">{item.qtyUnit}</span>}
-                    </div>
-                  </td>
-                  <td className="px-4 py-6 font-medium text-center text-text-muted">
-                    {formatVND(item.totalCost)}
-                  </td>
-                  <td className="px-4 py-6 font-bold text-right text-text-main text-[15px]">
-                    {formatVND(item.totalValue)}
-                  </td>
-                  <td className={`px-4 py-6 font-bold text-right tracking-tight ${plColorClass}`}>
-                    <div className="flex flex-col items-end">
-                      <span className="text-sm">{sign}{formatVND(item.plAbs)}</span>
-                      <span className="text-xs mt-0.5">{sign}{item.plPct.toFixed(1)}%</span>
-                    </div>
+            {sortedCategories.map((category) => (
+              <React.Fragment key={category}>
+                <tr className="bg-gray-50/50">
+                  <td colSpan={6} className="px-4 py-3 text-[11px] font-extrabold text-primary/60 uppercase tracking-widest">
+                    {category}
                   </td>
                 </tr>
-              );
-            })}
+                {categoryGroups[category].map((item) => {
+                  const Icon = item.icon;
+                  const isProfit = item.plAbs >= 0;
+                  const plColorClass = isProfit ? 'text-emerald-500' : 'text-rose-500';
+                  const sign = isProfit ? '+' : '';
+                  const detailHref = `/portfolio/assets/detail?name=${encodeURIComponent(item.name)}`;
+
+                  return (
+                    <tr
+                      key={item.name}
+                      onClick={() => router.push(detailHref)}
+                      className="hover:bg-gray-50/50 cursor-pointer transition-colors group"
+                    >
+                      <td className="px-4 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.iconBg}`}>
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <div className="whitespace-nowrap">
+                            <p className="font-bold text-text-main">{item.name}</p>
+                            <p className="text-xs text-text-muted mt-0.5">{item.type}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-6 font-medium text-center">
+                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full border whitespace-nowrap ${
+                          item.status === 'HOẠT ĐỘNG'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                            : 'bg-gray-50 text-text-muted border-gray-200'
+                        }`}>
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-6 font-bold text-center text-text-main">
+                        <div className="flex flex-col items-center leading-tight">
+                          <span>{item.totalQuantity > 0 ? formatNumber(item.totalQuantity) : '—'}</span>
+                          {item.qtyUnit && <span className="text-[11px] font-semibold text-text-muted mt-0.5 uppercase">{item.qtyUnit}</span>}
+                        </div>
+                      </td>
+                      <td className="px-4 py-6 font-medium text-center text-text-muted">
+                        {formatVND(item.totalCost)}
+                      </td>
+                      <td className="px-4 py-6 font-bold text-right text-text-main text-[15px]">
+                        {formatVND(item.totalValue)}
+                      </td>
+                      <td className={`px-4 py-6 font-bold text-right tracking-tight ${plColorClass}`}>
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm">{sign}{formatVND(item.plAbs)}</span>
+                          <span className="text-xs mt-0.5">{sign}{item.plPct.toFixed(1)}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </React.Fragment>
+            ))}
           </tbody>
         </table>
       </div>
