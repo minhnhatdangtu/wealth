@@ -4,6 +4,7 @@ import { usePortfolio } from '@/store/PortfolioContext';
 import Link from 'next/link';
 import { ArrowLeft, Edit3, Settings2, Pencil, Trash2, Info } from 'lucide-react';
 import React, { useState } from 'react';
+import { clsx } from 'clsx';
 import { formatCurrency, parseCurrency, formatNumber, parseDecimal } from '@/utils/format-utils';
 
 export default function AllAssetsPage() {
