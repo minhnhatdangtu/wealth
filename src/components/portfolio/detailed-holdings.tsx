@@ -186,8 +186,8 @@ export function DetailedHoldings() {
         </table>
       </div>
 
-      <div className="mt-8 flex justify-end">
-        <Link href="/portfolio/assets" className="text-sm font-bold text-primary hover:text-primary-light flex items-center gap-2 transition-colors cursor-pointer block">
+      <div className="mt-8 flex justify-end text-right">
+        <Link href="/portfolio/assets" className="text-sm font-bold text-primary hover:text-primary-light flex items-center gap-2 transition-colors cursor-pointer inline-flex">
           Xem tất cả tài sản <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
