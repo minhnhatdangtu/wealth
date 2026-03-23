@@ -2,7 +2,7 @@
 
 import { usePortfolio } from '@/store/PortfolioContext';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
 import { formatCurrency } from '@/utils/format-utils';
 
 export function HeroStats() {
@@ -110,6 +110,7 @@ export function HeroStats() {
         <div className="w-full lg:w-96 h-32 mt-8 lg:mt-0 relative">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
+              <YAxis hide domain={['auto', 'auto']} />
               <Line 
                 type="monotone" 
                 dataKey="value" 

@@ -1,19 +1,12 @@
 'use client';
 
 import { TrendingUp, Activity, CheckCircle2 } from 'lucide-react';
-import { AreaChart, Area, ResponsiveContainer, XAxis, CartesianGrid, Tooltip } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { usePortfolio } from '@/store/PortfolioContext';
 import { useMemo } from 'react';
 import { formatCurrency } from '@/utils/format-utils';
 
-const data = [
-  { name: 'THÁNG 12', value: 34000 },
-  { name: 'THÁNG 01', value: 35000 },
-  { name: 'THÁNG 02', value: 36000 },
-  { name: 'THÁNG 03', value: 38500 },
-  { name: 'THÁNG 04', value: 40000 },
-  { name: 'THÁNG 05', value: 42850 },
-];
+// Removed static mock data
 
 export function PortfolioChart() {
   const { assets } = usePortfolio();
@@ -29,7 +22,37 @@ export function PortfolioChart() {
     // Profit/Loss of already closed assets
     const closedPL = closedAssets.reduce((sum, a) => sum + (a.value - a.cost), 0);
 
-    return { activeCost, activeValue, activePL, closedPL };
+    // Generate dynamic chart data for the last 6 months
+    const now = new Date();
+    const dynamicChartData = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const lastDayOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+      
+      const monthValue = activeAssets.reduce((sum, a) => {
+        if (!a.startDate) return sum + a.value;
+        const startDate = new Date(a.startDate);
+        if (startDate > lastDayOfMonth) return sum;
+
+        const totalInterval = now.getTime() - startDate.getTime();
+        const currentInterval = lastDayOfMonth.getTime() - startDate.getTime();
+        
+        if (totalInterval <= 1000 * 60 * 60 * 24) return sum + a.value;
+        
+        const ratio = Math.min(1, Math.max(0, currentInterval / totalInterval));
+        const interpolatedValue = a.cost + (a.value - a.cost) * ratio;
+        return sum + interpolatedValue;
+      }, 0);
+      
+      const monthStr = `THÁNG ${String(lastDayOfMonth.getMonth() + 1).padStart(2, '0')}`;
+      dynamicChartData.push({
+        name: monthStr,
+        value: Math.round(monthValue)
+      });
+    }
+
+    return { activeCost, activeValue, activePL, closedPL, chartData: dynamicChartData };
   }, [assets]);
 
   const formatVND = (num: number) => formatCurrency(num);
@@ -70,7 +93,7 @@ export function PortfolioChart() {
 
         <div className="h-[280px] w-full mt-auto">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+            <AreaChart data={metrics.chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#1e3a8a" stopOpacity={0.3}/>
@@ -85,6 +108,7 @@ export function PortfolioChart() {
                 tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: '700' }} 
                 dy={16} 
               />
+              <YAxis hide={true} domain={['auto', 'auto']} />
               <Tooltip 
                 cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }}
                 contentStyle={{ borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', fontWeight: 'bold', color: '#1e293b' }}
